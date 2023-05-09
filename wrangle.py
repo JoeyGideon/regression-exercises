@@ -1,7 +1,7 @@
 import pandas as pd
 from env import host, username, password
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.model_selection import train_test_split
 def get_zillow_data():
     """
     This function connects to the zillow database and retrieves data from the properties_2017 table for
@@ -23,12 +23,24 @@ def get_zillow_data():
 
     return df
 
+
+
+# function to read from csv file
+def read_csv_file():
+    df = pd.read_csv('zillow_data.csv')
+    return df
+
+
+from sklearn.preprocessing import MinMaxScaler
+
+
+
+
 def prep_zillow(df):
     """
     This function takes in the Zillow DataFrame and does the following:
     - Drops any rows with missing values
-    - Scales the numerical columns using StandardScaler
-    - Returns the cleaned and scaled DataFrame
+    - Returns the cleaned DataFrame
     """
     
     # Drop any rows with missing values
@@ -40,15 +52,29 @@ def prep_zillow(df):
     num_df = df[num_cols]
     cat_df = df[cat_cols]
     
-    # Scale the numerical columns using StandardScaler
-    scaler = StandardScaler()
-    num_df_scaled = pd.DataFrame(scaler.fit_transform(num_df), columns=num_cols, index=num_df.index)
+    # Combine the numerical columns and categorical columns
+    cleaned_df = pd.concat([num_df, cat_df], axis=1)
     
-    # Combine the scaled numerical columns and categorical columns
-    cleaned_df = pd.concat([num_df_scaled, cat_df], axis=1)
-    
-    # Return the cleaned and scaled DataFrame
+    # Return the cleaned DataFrame
     return cleaned_df
+
+
+
+def split_data(df):
+    """
+    This function takes in the cleaned and scaled DataFrame and does the following:
+    - Splits the data into train, validate, and test sets (60/20/20 split)
+    - Returns the train, validate, and test sets
+    """
+    
+    # Split the data into train and test sets (80/20 split)
+    train, test = train_test_split(df, test_size=0.2, random_state=123)
+    
+    # Split the train set into train and validate sets (75/25 split)
+    train, validate = train_test_split(train, test_size=0.25, random_state=123)
+    
+    # Return the train, validate, and test sets
+    return train, validate, test
 
 def wrangle_zillow():
     """
@@ -64,3 +90,12 @@ def wrangle_zillow():
     
     # Return the cleaned and scaled DataFrame
     return df_prep
+
+
+
+def min_max_scaler(df):
+    scaler = MinMaxScaler()
+    scaled_data = scaler.fit_transform(df)
+    scaled_df = pd.DataFrame(scaled_data, columns=df.columns, index=df.index)
+    return scaled_df
+
